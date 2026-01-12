@@ -68,3 +68,9 @@ npm run dev
 ```
 
 Open [http://localhost:9002](http://localhost:9002) with your browser to see the result.
+
+### Images
+<img width="1915" height="916" alt="main page" src="https://github.com/user-attachments/assets/67922157-eaad-4e90-aa50-7b7d9e66a051" />
+
+<img width="1920" height="1898" alt="LearnAI-Roadmap-01-12-2026_07_25_PM" src="https://github.com/user-attachments/assets/d338a211-c8e0-416e-bf41-c8c799d0c524" />
+
