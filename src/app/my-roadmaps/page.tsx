@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth-provider';
 import { useRouter } from 'next/navigation';
-import { getSavedRoadmapsFromFirestore, SavedRoadmap } from '@/lib/firebase/firestore';
+import { getSavedRoadmapsFromFirestore, SavedRoadmap, deleteRoadmapFromFirestore } from '@/lib/firebase/firestore';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -19,7 +19,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { deleteRoadmapAction } from '../actions';
+
 import { useToast } from '@/hooks/use-toast';
 
 
@@ -44,9 +44,9 @@ export default function MyRoadmapsPage() {
           } catch (error) {
             console.error("Failed to fetch roadmaps", error);
             toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: 'Failed to load your roadmaps. Please try again later.'
+              variant: 'destructive',
+              title: 'Error',
+              description: 'Failed to load your roadmaps. Please try again later.'
             })
           } finally {
             setLoading(false);
@@ -59,19 +59,19 @@ export default function MyRoadmapsPage() {
 
   const handleDelete = async (docId: string) => {
     setIsDeleting(docId);
-    const result = await deleteRoadmapAction(docId);
-    if(result.success) {
-        setRoadmaps(prev => prev.filter(r => r.docId !== docId));
-        toast({
-            title: 'Success',
-            description: 'Roadmap deleted successfully.'
-        })
-    } else {
-        toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: result.error
-        })
+    try {
+      await deleteRoadmapFromFirestore(docId);
+      setRoadmaps(prev => prev.filter(r => r.docId !== docId));
+      toast({
+        title: 'Success',
+        description: 'Roadmap deleted successfully.'
+      })
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: error instanceof Error ? error.message : "Failed to delete roadmap."
+      })
     }
     setIsDeleting(null);
   }
@@ -98,15 +98,15 @@ export default function MyRoadmapsPage() {
 
       {roadmaps.length === 0 ? (
         <Card className="text-center py-20 border-dashed">
-            <CardContent>
-                <h3 className="text-xl font-semibold">No roadmaps yet!</h3>
-                <p className="text-muted-foreground mt-2 mb-4">
-                    Create your first learning roadmap to see it here.
-                </p>
-                <Button asChild>
-                    <Link href="/">Get Started</Link>
-                </Button>
-            </CardContent>
+          <CardContent>
+            <h3 className="text-xl font-semibold">No roadmaps yet!</h3>
+            <p className="text-muted-foreground mt-2 mb-4">
+              Create your first learning roadmap to see it here.
+            </p>
+            <Button asChild>
+              <Link href="/">Get Started</Link>
+            </Button>
+          </CardContent>
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -115,19 +115,19 @@ export default function MyRoadmapsPage() {
               <CardHeader>
                 <CardTitle className="font-headline text-xl leading-tight">{roadmap.goal}</CardTitle>
                 <CardDescription className="flex items-center gap-4 pt-2 text-sm">
-                    <span className='flex items-center gap-1.5'><Layers className="w-4 h-4" />{roadmap.roadmap.length} steps</span>
-                    <span className='flex items-center gap-1.5'><Clock className="w-4 h-4" />{roadmap.totalEstimatedTime}</span>
+                  <span className='flex items-center gap-1.5'><Layers className="w-4 h-4" />{roadmap.roadmap.length} steps</span>
+                  <span className='flex items-center gap-1.5'><Clock className="w-4 h-4" />{roadmap.totalEstimatedTime}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-grow" />
               <CardFooter className="flex justify-between gap-2">
                 <Button variant="outline" className="w-full" asChild>
-                    <Link href={`/my-roadmaps/${roadmap.docId}`}>View Roadmap</Link>
+                  <Link href={`/my-roadmaps/${roadmap.docId}`}>View Roadmap</Link>
                 </Button>
-                 <AlertDialog>
+                <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" size="icon" disabled={isDeleting === roadmap.docId}>
-                        {isDeleting === roadmap.docId ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                      {isDeleting === roadmap.docId ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>

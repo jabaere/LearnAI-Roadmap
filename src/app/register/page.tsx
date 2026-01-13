@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
-import { saveRoadmapAction } from '@/app/actions';
+import { saveRoadmapToFirestore } from '@/lib/firebase/firestore';
 import { LearningRoadmapOutput } from '@/ai/flows/generate-learning-roadmap';
 import { useAuth } from '@/context/auth-provider';
 
@@ -24,16 +24,16 @@ const formSchema = z.object({
 });
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-      role="img"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
-      <title>Google</title>
-      <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.347-2.347C18.893 1.187 16.2.253 12.48.253 5.867.253.333 5.72.333 12.333s5.534 12.08 12.147 12.08c3.28 0 5.76-1.08 7.627-2.973 1.947-1.947 2.6-4.827 2.6-7.253 0-.6-.053-1.147-.16-1.68z" />
-    </svg>
-  );
+  <svg
+    role="img"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <title>Google</title>
+    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.347-2.347C18.893 1.187 16.2.253 12.48.253 5.867.253.333 5.72.333 12.333s5.534 12.08 12.147 12.08c3.28 0 5.76-1.08 7.627-2.973 1.947-1.947 2.6-4.827 2.6-7.253 0-.6-.053-1.147-.16-1.68z" />
+  </svg>
+);
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -42,7 +42,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-   useEffect(() => {
+  useEffect(() => {
     if (user) {
       router.push('/');
     }
@@ -55,16 +55,26 @@ export default function RegisterPage() {
 
   const handlePendingRoadmap = async (userId: string) => {
     const pendingRoadmapRaw = localStorage.getItem('pendingRoadmap');
-      if (pendingRoadmapRaw) {
-        const pendingRoadmap: LearningRoadmapOutput = JSON.parse(pendingRoadmapRaw);
-        await saveRoadmapAction(pendingRoadmap, userId);
+    if (pendingRoadmapRaw) {
+      const pendingRoadmap: LearningRoadmapOutput = JSON.parse(pendingRoadmapRaw);
+      try {
+        await saveRoadmapToFirestore(userId, pendingRoadmap);
         localStorage.removeItem('pendingRoadmap');
         toast({ title: 'Welcome!', description: 'Your account is created and roadmap saved.' });
         router.push('/my-roadmaps');
-      } else {
-        toast({ title: 'Welcome!', description: 'Your account has been created.' });
+      } catch (error) {
+        console.error("Failed to save pending roadmap", error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Account created, but failed to save roadmap.'
+        });
         router.push('/');
       }
+    } else {
+      toast({ title: 'Welcome!', description: 'Your account has been created.' });
+      router.push('/');
+    }
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -87,17 +97,17 @@ export default function RegisterPage() {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-        const provider = new GoogleAuthProvider();
-        const userCredential = await signInWithPopup(auth, provider);
-        await handlePendingRoadmap(userCredential.user.uid);
-    } catch(error: any) {
-        toast({
-            variant: 'destructive',
-            title: 'Sign Up Failed',
-            description: "Could not sign up with Google. Please try again.",
-        });
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      await handlePendingRoadmap(userCredential.user.uid);
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Sign Up Failed',
+        description: "Could not sign up with Google. Please try again.",
+      });
     } finally {
-        setIsGoogleLoading(false);
+      setIsGoogleLoading(false);
     }
   }
 
@@ -119,7 +129,7 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="name@example.com" {...field} disabled={isGoogleLoading}/>
+                      <Input placeholder="name@example.com" {...field} disabled={isGoogleLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -154,7 +164,7 @@ export default function RegisterPage() {
               </span>
             </div>
           </div>
-           <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
+          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
             {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2 h-4 w-4" />}
             Google
           </Button>

@@ -11,8 +11,8 @@ import { Clock, Layers, Save, Share2, Loader2, BrainCircuit } from 'lucide-react
 import { useAuth } from '@/context/auth-provider';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { saveRoadmapAction, regenerateStepAction, shareRoadmapAction } from '@/app/actions';
-import type { SavedRoadmap } from '@/lib/firebase/firestore';
+import { regenerateStepAction } from '@/app/actions';
+import { saveRoadmapToFirestore, setRoadmapPublicStatus, SavedRoadmap } from '@/lib/firebase/firestore';
 
 interface RoadmapDisplayProps {
   roadmap: Roadmap;
@@ -51,21 +51,13 @@ export default function RoadmapDisplay({ roadmap: initialRoadmap, onRoadmapUpdat
     setIsSaving(true);
     let docId = (roadmap as SavedRoadmap).docId;
     try {
-      const result = await saveRoadmapAction(roadmap, user.uid);
-      if (result.success && result.docId) {
-        docId = result.docId;
-        setRoadmap(prev => ({ ...prev, docId: result.docId! }));
-        toast({
-          title: 'Success!',
-          description: 'Your roadmap has been saved.',
-        });
-        // A bit of a hack to distinguish between new and existing roadmaps
-        // if (!(roadmap as SavedRoadmap).docId) {
-        //     router.push('/my-roadmaps');
-        // }
-      } else {
-        throw new Error(result.error);
-      }
+      docId = await saveRoadmapToFirestore(user.uid, roadmap);
+
+      setRoadmap(prev => ({ ...prev, docId }));
+      toast({
+        title: 'Success!',
+        description: 'Your roadmap has been saved.',
+      });
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -96,17 +88,17 @@ export default function RoadmapDisplay({ roadmap: initialRoadmap, onRoadmapUpdat
 
     setIsSharing(true);
     try {
-      const result = await shareRoadmapAction(docId);
-      if (result.success) {
-        const url = `${window.location.origin}/share/${docId}`;
-        navigator.clipboard.writeText(url);
-        toast({
-          title: "Share Link Copied!",
-          description: "Anyone with the link can now view this roadmap.",
-        });
-      } else {
-        throw new Error(result.error);
-      }
+      await setRoadmapPublicStatus(docId, true);
+
+      // Update local state to reflect public status
+      setRoadmap(prev => ({ ...prev, public: true }));
+
+      const url = `${window.location.origin}/share/${docId}`;
+      navigator.clipboard.writeText(url);
+      toast({
+        title: "Share Link Copied!",
+        description: "Anyone with the link can now view this roadmap.",
+      });
     } catch (error) {
       toast({
         variant: 'destructive',
