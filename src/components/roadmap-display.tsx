@@ -167,9 +167,14 @@ export default function RoadmapDisplay({ roadmap: initialRoadmap, onRoadmapUpdat
             <span>{roadmap.totalEstimatedTime}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${(roadmap as SavedRoadmap).public ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : roadmap.difficulty === 'Beginner' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : roadmap.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
-              {(roadmap as SavedRoadmap).public ? 'Public' : roadmap.difficulty}
+            <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${roadmap.difficulty === 'Beginner' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : roadmap.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
+              {roadmap.difficulty}
             </span>
+            {(roadmap as SavedRoadmap).public && (
+              <span className="px-2 py-0.5 text-xs rounded-full font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                Public
+              </span>
+            )}
           </div>
         </div>
         <div className="absolute top-6 right-6 flex gap-2">
