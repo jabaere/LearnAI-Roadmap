@@ -1,43 +1,95 @@
 # LearnAI Roadmap
 
-LearnAI Roadmap is an AI-powered application designed to help users generate personalized learning roadmaps for any goal. Simply input what you want to learn, your current skill level, and your time commitment, and our AI will generate a structured, step-by-step curriculum to guide you from start to finish.
+**LearnAI Roadmap** is an AI-powered web application that generates **personalized, time-aware learning roadmaps** for any goal.
 
-## Core Features
+Users enter what they want to learn, their current skill level, and how much time they can dedicate daily. The application then uses **__Google Gemini 3__** (via Firebase Genkit) to generate a **structured, step-by-step curriculum** with realistic time estimates, practical guidance, and clear completion criteria.
 
-- **Personalized Goal Input**: Specify your learning goal, skill level (Beginner, Intermediate, Advanced), and daily time commitment.
-- **AI Roadmap Generation**: Leverages Google's Gemini AI to create a detailed learning path with realistic time estimates for each step.
-- **Interactive Roadmap Display**: View your generated roadmap in a clean, split-screen layout. Steps are on the left, and detailed information is on the right.
-- **In-Depth Step Details**: Click on any step to see what you'll learn, practical first steps, practice exercises, and criteria for completion. You can even ask the AI to "Go Deeper" for more detailed explanations.
-- **User Authentication**: Securely sign up or log in using email/password or Google to save and manage your roadmaps.
-- **Save & View Roadmaps**: Authenticated users can save their generated roadmaps and view them later from their personal dashboard.
-- **Share Roadmaps**: Generate a public link to share your learning roadmaps with others.
+The goal is to turn learning from a vague intention into a **clear, actionable plan**.
 
-## Tech Stack
+---
 
-- **Framework**: [Next.js](https://nextjs.org/) (App Router)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **UI Components**: [ShadCN UI](https://ui.shadcn.com/)
-- **Generative AI**: [Google AI & Genkit](https://firebase.google.com/docs/genkit)
-- **Backend & Database**: [Firebase](https://firebase.google.com/) (Authentication, Firestore)
-- **Form Management**: [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
+## 🚀 Core Features
 
-## Getting Started
+- **Personalized Goal Input**  
+  Define your learning goal, skill level (Beginner, Intermediate, Advanced), and daily time commitment.
 
-To get a local copy up and running, follow these simple steps.
+- **AI Roadmap Generation (Powered by __Google Gemini 3__)**  
+  Learning roadmaps are generated server-side using **Google Gemini 3**, producing structured JSON output with realistic time estimates for each step.
+
+- **Interactive Roadmap Display**  
+  Clean split-screen UI where roadmap steps appear on the left and detailed explanations on the right.
+
+- **In-Depth Step Details**  
+  Each step includes:
+  - what you will learn  
+  - practical first steps  
+  - practice methods  
+  - mastery time and completion criteria  
+  Users can ask the AI to **“Go Deeper”**, which regenerates the step with more detail using Gemini 3.
+
+- **User Authentication**  
+  Secure sign-up and login with Email/Password or Google.
+
+- **Save & View Roadmaps**  
+  Authenticated users can save generated roadmaps and revisit them from their personal dashboard.
+
+- **Share Roadmaps**  
+  Generate a public link to share learning roadmaps with others.
+
+---
+
+## 🧠 Google Gemini 3 Integration (Explicit)
+
+This application is **built directly on __Google Gemini 3__ using Firebase Genkit**.
+
+All AI logic is implemented server-side in the following directory: src/ai/flows/
+
+
+### Key Gemini-Powered Files
+
+- **`generate-learning-roadmap.ts`**  
+  Uses Gemini 3 to generate full, structured learning roadmaps based on the user’s goal, skill level, and time commitment.
+
+- **`regenerate-step-details.ts`**  
+  Uses Gemini 3 to regenerate and expand a single roadmap step with deeper, beginner-friendly explanations.
+
+These files use `ai.definePrompt` and `ai.defineFlow`, which execute **Gemini 3 inference calls** through Genkit. All outputs are validated using strict Zod schemas to ensure predictable, structured JSON responses.
+
+### Security Notes
+
+- The **`GEMINI_API_KEY` is never exposed to the frontend**
+- All Gemini 3 calls are executed **server-side only**
+- Prompts are defined locally and executed at runtime for performance and security
+
+---
+
+## 🛠 Tech Stack
+
+- **Framework:** [Next.js](https://nextjs.org/) (App Router)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components:** [ShadCN UI](https://ui.shadcn.com/)
+- **Generative AI:** **__Google Gemini 3__** via [Firebase Genkit](https://firebase.google.com/docs/genkit)
+- **Backend & Database:** [Firebase](https://firebase.google.com/) (Authentication, Firestore)
+- **Form Management:** [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
+
+---
+
+## 🧪 Getting Started
+
+Follow these steps to run the project locally.
 
 ### Prerequisites
 
-- Node.js (v18 or newer recommended)
+- Node.js (v18 or newer)
 - npm or yarn
 
 ### Installation
 
-1.  **Clone the repository:**
-    ```sh
-    git clone https://github.com/your-username/learnai-roadmap.git
-    cd learnai-roadmap
-    ```
+1. **Clone the repository**
+   ```sh
+   git clone https://github.com/jabaere/LearnAI-Roadmap.git
+   cd LearnAI-Roadmap
 
 2.  **Install NPM packages:**
     ```sh
