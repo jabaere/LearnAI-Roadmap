@@ -38,7 +38,7 @@ The goal is to turn learning from a vague intention into a **clear, actionable p
 
 ---
 
-## 🧠 Google Gemini 3 Integration (Explicit)
+## 🧠 Google Gemini 3 Integration 
 
 This application is **built directly on __Google Gemini 3__ using Firebase Genkit**.
 
